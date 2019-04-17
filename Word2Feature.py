@@ -1,12 +1,13 @@
+
+#%%
 import  cv2
 from xihua import *
-
 import  PIL
-
-
 import  numpy as np
 from ImageUtil import  *
 import matplotlib.pyplot as plt
+#%%
+
 class Word2Feature(object):
     def __init__(self,rownum=4, colnum =9):
         self.rownum = 4
@@ -14,6 +15,18 @@ class Word2Feature(object):
 
     def run(self,img):
         sub_img = self.dissolve(img)
+
+        # fig, ax =plt.subplots(1,5,figsize = (32,8))
+        # ax[0].imshow(img,cmap='gray')
+        # ax[1].imshow(sub_img[0,...],cmap='gray')
+        # ax[2].imshow(sub_img[1,...],cmap='gray')
+        # ax[3].imshow(sub_img[2,...],cmap='gray')
+        # ax[4].imshow(sub_img[3,...],cmap='gray')
+        # plt.xticks([])
+        # plt.yticks([])
+        # plt.axis("off")
+        # plt.show()
+
         features = self.get_features(img, sub_img)
         tot = np.sum(sub_img==0,axis=1)
         tot = np.sum(tot,axis=1)
@@ -26,17 +39,36 @@ class Word2Feature(object):
 
     #局部弹性网格划分
     def get_features(self,img, sub_img):
-        img01 = (img==0)
-        sub_img01 = (sub_img==0)
+        img = img.copy()
+        sub_img = sub_img.copy()
         features = []
-        self.__bfs(img01,sub_img01,2,features)
+        self.__dfs(img,sub_img,2,features)
+
+        # fig, ax =plt.subplots(1,5,figsize = (32,8))
+        # ax[0].imshow(img,cmap='gray')
+        # ax[1].imshow(sub_img[0,...],cmap='gray')
+        # ax[2].imshow(sub_img[1,...],cmap='gray')
+        # ax[3].imshow(sub_img[2,...],cmap='gray')
+        # ax[4].imshow(sub_img[3,...],cmap='gray')
+        # plt.xticks([])
+        # plt.yticks([])
+        # plt.axis("off")
+        # plt.show()
+
         return  features
 
-    def __bfs(self,img01,sub_img01,depth,features):
+    def __dfs(self,img,sub_img,depth,features):
+        img01 = (img ==0)
+        sub_img01 = (sub_img ==0)
         if depth ==0:
             sum = np.sum(sub_img01,axis=1)
             sum = np.sum(sum,axis=1)
             features.append(sum)
+            img[(0,-1),:]=0
+            img[:,(0,-1)]=0
+
+            sub_img[:,(0,-1),:]=0
+            sub_img[:,:,(0,-1)]=0
             return
         row_cnt = np.sum(img01,axis=1)
         col_cnt = np.sum(img01,axis=0)
@@ -47,9 +79,9 @@ class Word2Feature(object):
         for i in range(1,4):
             for j in range(1,3):
                 # print(sub_img01.shape)
-                self.__bfs(img01[split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]],\
-                               sub_img01[:,split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]],\
-                               depth-1,features)
+                self.__dfs(img[split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
+                           sub_img[:,split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
+                           depth-1,features)
 
     def __split(self,cnt,num):
         split =[]
@@ -73,7 +105,7 @@ class Word2Feature(object):
         img = img.copy()
         sub_img = np.zeros((4,img.shape[0],img.shape[1]))
         sub_img[...] = 255
-#AND 在横竖方向上分解较好，OR 在撇捺分解较好
+        #AND 在横竖方向上分解较好，OR 在撇捺分解较好
         for x in range(1,img.shape[0]-1):
             for y in range(1,img.shape[1]-1):
                 if img[x,y] == 255:
@@ -87,13 +119,6 @@ class Word2Feature(object):
                 if img[x-1,y-1]==0 or  img[x+1,y+1]==0:
                     sub_img[3,x,y] = 0
 
-        fig, ax =plt.subplots(1,5,figsize = (32,8))
-        ax[0].imshow(img,cmap='gray')
-        ax[1].imshow(sub_img[0,...],cmap='gray')
-        ax[2].imshow(sub_img[1,...],cmap='gray')
-        ax[3].imshow(sub_img[2,...],cmap='gray')
-        ax[4].imshow(sub_img[3,...],cmap='gray')
-        plt.show()
 
         return sub_img
 
@@ -145,15 +170,15 @@ def rotating_calipers(raw_img):
     img = cv2.resize(img,raw_img.size)
     th,img= cv2.threshold(img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     return img
-        # print(jection)
-        # plt.imshow(temp_img,cmap="gray")
-        # plt.show()
+    # print(jection)
+    # plt.imshow(temp_img,cmap="gray")
+    # plt.show()
 
 
 if __name__ == '__main__':
 
     dir = r'Data\word'
-    for img_name in os.listdir(dir)[:4]:
+    for img_name in os.listdir(dir):
         img_path = os.path.join(dir, img_name)
         img, pimg = ImageProcessing.get_img(img_path)
         pimg = pimg.convert("L")
@@ -161,12 +186,24 @@ if __name__ == '__main__':
         img2 = rotating_calipers(pimg)
         # print(img2)
         img3 =XiHua.Xihua(img2)
-
+        fig,ax = plt.subplots(1,3)
+        ax[0].imshow(img,cmap="gray")
+        ax[1].imshow(img2,cmap="gray")
+        ax[2].imshow(img3,cmap="gray")
+        ax[0].set_xticks([])
+        ax[0].set_yticks([])
+        ax[1].set_xticks([])
+        ax[1].set_yticks([])
+        ax[2].set_xticks([])
+        ax[2].set_yticks([])
+        plt.show()
         word2feature = Word2Feature(4,9)
         features = word2feature.run(img3)
         print(features)
         # ax[3].imshow(img4,cmap="gray")
         # plt.show()
 
+
+#%%
 
 
