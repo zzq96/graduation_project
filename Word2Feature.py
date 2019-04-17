@@ -91,13 +91,13 @@ class Word2Feature(object):
         sum = 0
         c = 0
         for i in range(cnt.size):
+            sum = sum + cnt[i]
             if sum >=average:
-                split.append(i)
+                split.append(i+1)
                 sum = 0
                 c = c +1
                 if c == num-1:
                     break
-            sum = sum + cnt[i]
         split.append(cnt.size)
         return  split
 
