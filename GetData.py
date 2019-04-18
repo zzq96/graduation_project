@@ -1,5 +1,7 @@
+
 #%%
 import  xihua
+
 import random
 import tensorflow
 import matplotlib.pyplot as plt
@@ -89,7 +91,7 @@ def get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reve
     # for item in
     train_dir =os.path.join(data_dir, 'train')
     test_dir = os.path.join(data_dir, 'test')
-    for word, id in (('魑', 0),):# word2id.items():
+    for word, id in (('啊', 0),):# word2id.items():
         print(word, id)
         image_list = []
         font2img = Font2Img(width, height)
@@ -117,32 +119,34 @@ def get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reve
                         aug_img = ImageProcessing.opening(img,3)
                         flag =4
                     image_list.append((aug_img,is_reversed))
-                # c = img - aug_img
-                # cc,count = np.unique(c,return_counts=True)
                 # fig,ax = plt.subplots(1,2)
                 # ax[0].imshow(img,cmap="gray")
-                # # ax[1].imshow(aug_img,cmap="gray")
-                # ax[1].imshow(xihua.Xihua(img,xihua.array),cmap="gray")
-                # # ax[3].imshow(xihua.Xihua(aug_img,xihua.array),cmap="gray")
+                # ax[1].imshow(aug_img,cmap="gray")
+                # ax[1].imshow(xihua.XiHua.Xihua(img),cmap="gray")
+                # ax[3].imshow(xihua.Xihua(aug_img,xihua.array),cmap="gray")
                 #
+                # ax[0].set_xticks([])
+                # ax[0].set_yticks([])
+                # ax[1].set_xticks([])
+                # ax[1].set_yticks([])
                 # plt.title(font_name)
                 # plt.show()
         test_num = len(image_list) * test_ratio
         np.random.shuffle(image_list)
         count = 0
         for i in range(len(image_list)):
-            img = image_list[i][0]
-            is_reversed = image_list[i][1]
-            if count < test_num:
-                word_dir =os.path.join(test_dir,'%0.5d'%id)
-            else:
-                word_dir =os.path.join(train_dir,'%0.5d'%id)
+           img = image_list[i][0]
+           is_reversed = image_list[i][1]
+           if count < test_num:
+               word_dir =os.path.join(test_dir,'%0.5d'%id)
+           else:
+               word_dir =os.path.join(train_dir,'%0.5d'%id)
 
-            if not os.path.isdir(word_dir):
-                os.makedirs(word_dir)
-            path_image = os.path.join(word_dir, '%d %d.png'% (count,is_reversed))
-            cv2.imwrite(path_image, img)
-            count +=1
+           if not os.path.isdir(word_dir):
+              os.makedirs(word_dir)
+           path_image = os.path.join(word_dir, '%d %d.png'% (count,is_reversed))
+           cv2.imwrite(path_image, img)
+           count +=1
 
 if __name__ =="__main__":
     width = 100
@@ -154,13 +158,4 @@ if __name__ =="__main__":
     reversed_ratio = 0.4
     data_dir = r'kNNData'
     get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio, is_aug=False)
-#%%
 
-#%%
-a =np.array([1,2])
-b = []
-b.append(a)
-b.append(a)
-print(b)
-a[1] = 3
-print(b)
