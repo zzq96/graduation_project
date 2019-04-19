@@ -22,6 +22,16 @@ class Word2Feature(object):
         # ax[2].imshow(sub_img[1,...],cmap='gray')
         # ax[3].imshow(sub_img[2,...],cmap='gray')
         # ax[4].imshow(sub_img[3,...],cmap='gray')
+        # ax[0].set_xticks([])
+        # ax[0].set_yticks([])
+        # ax[1].set_xticks([])
+        # ax[1].set_yticks([])
+        # ax[2].set_xticks([])
+        # ax[2].set_yticks([])
+        # ax[3].set_xticks([])
+        # ax[3].set_yticks([])
+        # ax[4].set_xticks([])
+        # ax[4].set_yticks([])
         # plt.xticks([])
         # plt.yticks([])
         # plt.axis("off")
@@ -50,6 +60,16 @@ class Word2Feature(object):
         # ax[2].imshow(sub_img[1,...],cmap='gray')
         # ax[3].imshow(sub_img[2,...],cmap='gray')
         # ax[4].imshow(sub_img[3,...],cmap='gray')
+        # ax[0].set_xticks([])
+        # ax[0].set_yticks([])
+        # ax[1].set_xticks([])
+        # ax[1].set_yticks([])
+        # ax[2].set_xticks([])
+        # ax[2].set_yticks([])
+        # ax[3].set_xticks([])
+        # ax[3].set_yticks([])
+        # ax[4].set_xticks([])
+        # ax[4].set_yticks([])
         # plt.xticks([])
         # plt.yticks([])
         # plt.axis("off")
@@ -61,6 +81,10 @@ class Word2Feature(object):
         img01 = (img ==0)
         sub_img01 = (sub_img ==0)
         if depth ==0:
+            if img.shape[0] == 0 or img.shape[1] ==0:
+                features.append(np.zeros(4))
+                return
+                # print(img.shape)
             sum = np.sum(sub_img01,axis=1)
             sum = np.sum(sum,axis=1)
             features.append(sum)
@@ -70,18 +94,24 @@ class Word2Feature(object):
             sub_img[:,(0,-1),:]=0
             sub_img[:,:,(0,-1)]=0
             return
-        row_cnt = np.sum(img01,axis=1)
-        col_cnt = np.sum(img01,axis=0)
-        split_row =self.__split(row_cnt,3)#[0,...,img01.shape[0]}
-        split_col =self.__split(col_cnt,2)
-        # print(img01.shape,sub_img01.shape)
-        # print(split_row,split_col)
-        for i in range(1,4):
-            for j in range(1,3):
-                # print(sub_img01.shape)
-                self.__dfs(img[split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
-                           sub_img[:,split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
-                           depth-1,features)
+        if img.shape[0] == 0 or img.shape[1] ==0:
+            for i in range(1,4):
+                for j in range(1,3):
+                    self.__dfs(img[0:0,0:0],img[0:0,0:0],depth-1,features)
+        else:
+            row_cnt = np.sum(img01,axis=1)
+            col_cnt = np.sum(img01,axis=0)
+            split_row =self.__split(row_cnt,3)#[0,...,img01.shape[0]}
+            split_col =self.__split(col_cnt,2)
+            # print(split_row,split_col,depth)
+            # print(img01.shape,sub_img01.shape)
+            # print(split_row,split_col)
+            for i in range(1,4):
+                for j in range(1,3):
+                    # print(sub_img01.shape)
+                    self.__dfs(img[split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
+                               sub_img[:,split_row[i-1]:split_row[i],split_col[j-1]:split_col[j]], \
+                               depth-1,features)
 
     def __split(self,cnt,num):
         split =[]
@@ -99,6 +129,12 @@ class Word2Feature(object):
                 if c == num-1:
                     break
         split.append(cnt.size)
+        for i in range(len(split)):
+            if split[i] >=cnt.size:
+                split[i] = cnt.size-1
+        for i in range(num+1-len(split)):
+            split.append(cnt.size-1)
+
         return  split
 
     def dissolve(self,img):
@@ -199,11 +235,8 @@ if __name__ == '__main__':
         plt.show()
         word2feature = Word2Feature(4,9)
         features = word2feature.run(img3)
-        print(features)
+        print(features.shape)
         # ax[3].imshow(img4,cmap="gray")
         # plt.show()
-
-
-#%%
 
 

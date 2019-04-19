@@ -2,6 +2,7 @@
 #%%
 import  xihua
 
+import  Word2Feature
 import random
 import tensorflow
 import matplotlib.pyplot as plt
@@ -80,7 +81,7 @@ class Font2Img(object):
         return img
 
 
-def get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio,is_aug=0):
+def get_data1(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio,is_aug=0):
     id2word = {}
     word2id = {}
     with open(r"Data/id2word.pkl","rb") as f:
@@ -91,7 +92,7 @@ def get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reve
     # for item in
     train_dir =os.path.join(data_dir, 'train')
     test_dir = os.path.join(data_dir, 'test')
-    for word, id in (('啊', 0),):# word2id.items():
+    for word, id in  word2id.items():
         print(word, id)
         image_list = []
         font2img = Font2Img(width, height)
@@ -148,6 +149,48 @@ def get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reve
            cv2.imwrite(path_image, img)
            count +=1
 
+def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio):
+    id2word = {}
+    word2id = {}
+    with open(r"Data/id2word.pkl","rb") as f:
+        id2word = pickle.load(f)
+    with open(r"Data/word2id.pkl","rb") as f:
+        word2id = pickle.load(f)
+
+    num = len(word2id)
+    # print(num)
+    X = []
+    Y = []
+    word2feature = Word2Feature.Word2Feature()
+    for word, id in  list(word2id.items())[:]:
+        print(word, id)
+        image_list = []
+        font2img = Font2Img(width, height)
+        for font_name in os.listdir(r"./Fonts")[:]:
+            font_path = os.path.join(r"./Fonts",font_name)
+            for rotate in range(-Rotate, Rotate+1, Rotate_step):
+                is_reversed = random.random()<reversed_ratio
+                img = font2img.get_image(font_path, word, rotate,crop,is_reversed)
+                feature = word2feature.run(img)
+                X.append(feature)
+                Y.append([id,is_reversed])
+
+    X = np.array(X)
+    Y = np.array(Y)
+    shuffle = [i for i in range(len(X))]
+    random.shuffle(shuffle)
+    test_num = int(len(X)*test_ratio)
+    test_X = X[shuffle[:test_num]]
+    train_X = X[shuffle[test_num:]]
+    test_Y = Y[shuffle[:test_num]]
+    train_Y = Y[shuffle[test_num:]]
+    print(test_num,len(X)-test_num)
+    print(test_X.shape,train_X.shape)
+    np.save(os.path.join(data_dir,'test_X'),test_X)
+    np.save(os.path.join(data_dir,'train_X'),train_X)
+    np.save(os.path.join(data_dir,'test_Y'),test_Y)
+    np.save(os.path.join(data_dir,'train_Y'),train_Y)
+
 if __name__ =="__main__":
     width = 100
     height = 100
@@ -157,5 +200,5 @@ if __name__ =="__main__":
     crop = 15# 字左右随机裁剪0-15个像素
     reversed_ratio = 0.4
     data_dir = r'kNNData'
-    get_data(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio, is_aug=False)
+    get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio)
 
