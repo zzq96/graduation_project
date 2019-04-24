@@ -171,9 +171,9 @@ class ImageProcessing(object):
     def plot_line(img, line,axis):
         img = img.copy()
         if axis ==0:
-            img[:,line-2:line] = 0
+            img[:,line-2:line] = 150
         else:
-            img[line-2:line,:] = 0
+            img[line-2:line,:] = 100
         return  img
 
     @staticmethod
@@ -279,8 +279,8 @@ class Captha2Words(object):
         split_lines.append(right_boundary)
         img = ImageProcessing.plot_line(img,left_boundary,axis = 0)
         img = ImageProcessing.plot_line(img,right_boundary,axis = 0)
-        plt.imshow(img,cmap='gray')
-        plt.show()
+        # plt.imshow(img,cmap='gray')
+        # plt.show()
         words = self.get_words(raw_img,split_lines)
         return  words
 
@@ -309,31 +309,31 @@ class Captha2Words(object):
         word2 = cv2.resize(word2, (self.height, self.weight))
         th,word3= cv2.threshold(word2,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         word4 = ImageProcessing.closing(word3)
-        fig,ax = plt.subplots(1,4)
-        ax[0].imshow(word1, cmap="gray")
-        ax[1].imshow(word2, cmap="gray")
-        ax[2].imshow(word3, cmap="gray")
-        ax[3].imshow(word4, cmap="gray")
-        plt.xticks([])
-        plt.yticks([])
-        plt.show()
+        # fig,ax = plt.subplots(1,4)
+        # ax[0].imshow(word1, cmap="gray")
+        # ax[1].imshow(word2, cmap="gray")
+        # ax[2].imshow(word3, cmap="gray")
+        # ax[3].imshow(word4, cmap="gray")
+        # plt.xticks([])
+        # plt.yticks([])
+        # plt.show()
         return  word4
 
 
     def Kmeans(self,img):
         X = self.get_black_point(img)
-        plt.figure(figsize=(10,2))
+        # plt.figure(figsize=(10,2))
         km = KMeans(n_clusters=self.k)
         y_pred = km.fit_predict(X)
         centers = km.cluster_centers_
         centers = np.asarray(centers,dtype = np.int16)
         centers = centers[np.argsort(centers[:,1])]
         # print(centers)
-        plt.scatter(X[:,1], 88-X[:,0], c = y_pred, linewidths=0.01)
-        plt.scatter(centers[:,1],88-centers[:,0],c='r', linewidths= 10)
-        count = np.sum(img == 0,axis= 0)
-        plt.plot(count,'b')
-        plt.show()
+        # plt.scatter(X[:,1], 88-X[:,0], c = y_pred, linewidths=0.01)
+        # plt.scatter(centers[:,1],88-centers[:,0],c='r', linewidths= 10)
+        # count = np.sum(img == 0,axis= 0)
+        # plt.plot(count,'b')
+        # plt.show()
         return  centers
 
     def plot_centers(self, PIL_img, centers):

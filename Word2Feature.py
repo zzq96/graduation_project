@@ -15,6 +15,8 @@ class Word2Feature(object):
 
     def run(self,img):
         sub_img = self.dissolve(img)
+        # plt.imshow(img,cmap="gray")
+        # plt.show()
 
         # fig, ax =plt.subplots(1,5,figsize = (32,8))
         # ax[0].imshow(img,cmap='gray')
@@ -189,10 +191,11 @@ def get_img_width(projection_x):
     return stop_pos - start_pos
 
 def rotating_calipers(raw_img):
+    raw_img = Image.fromarray(raw_img.astype('uint8')).convert('L')
     img = raw_img.copy()
     min_width = 100
     min_angle =  100
-    for angle in range(-45,45):
+    for angle in range(-20,20,2):
         temp_img = img.rotate(angle, expand = True,fillcolor ="white")
         jection = get_projection_x(temp_img, False)
         cur_width = get_img_width(jection)
@@ -217,9 +220,8 @@ if __name__ == '__main__':
     for img_name in os.listdir(dir):
         img_path = os.path.join(dir, img_name)
         img, pimg = ImageProcessing.get_img(img_path)
-        pimg = pimg.convert("L")
 
-        img2 = rotating_calipers(pimg)
+        img2 = rotating_calipers(img)
         # print(img2)
         img3 =XiHua.Xihua(img2)
         fig,ax = plt.subplots(1,3)

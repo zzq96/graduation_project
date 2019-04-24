@@ -1,7 +1,7 @@
 
 #%%
 import  xihua
-
+import time
 import  Word2Feature
 import random
 import tensorflow
@@ -16,31 +16,6 @@ import  cv2
 import  shutil
 from ImageUtil import  *
 
-#%%
-#得到汉字和字符的映射
-def get_dict(path):
-    """
-    :param path:存储汉字的excel绝对路径，一列存
-    :return: id2word，word2id
-    """
-    table = xlrd.open_workbook(path)
-    sheet = table.sheet_by_index(0)
-    id2word = {}
-    word2id = {}
-    for i in range(sheet.nrows):
-        word = sheet.row_values(i)[0]
-        id2word[i] = word
-        word2id[word] = i
-    # print(word, type(word))
-    return id2word,word2id
-
-table_path = r'汉字编码字符集一级字库3755个（一列）.xls'
-id2word, word2id = get_dict(table_path)
-with open(r"Data/id2word.pkl","wb") as f:
-    pickle.dump(id2word, f)
-with open(r"Data/word2id.pkl","wb") as f:
-    pickle.dump(word2id, f)
-#%%
 #得到初始数据集
 class Font2Img(object):
     """
@@ -162,19 +137,28 @@ def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,
     X = []
     Y = []
     word2feature = Word2Feature.Word2Feature()
+    time1 = time.clock()
     for word, id in  list(word2id.items())[:]:
         print(word, id)
         image_list = []
         font2img = Font2Img(width, height)
-        for font_name in os.listdir(r"./Fonts")[:]:
-            font_path = os.path.join(r"./Fonts",font_name)
+        for font_name in os.listdir(r"./KNNFonts")[:]:
+            font_path = os.path.join(r"./KNNFonts",font_name)
             for rotate in range(-Rotate, Rotate+1, Rotate_step):
                 is_reversed = random.random()<reversed_ratio
+                # fig, ax = plt.subplots(1,2)
                 img = font2img.get_image(font_path, word, rotate,crop,is_reversed)
+                # ax[0].imshow(img,cmap='gray')
+                if abs(rotate) >5:
+                    img = Word2Feature.rotating_calipers(img)
+                # ax[1].imshow(img,cmap='gray')
+                # plt.show()
                 feature = word2feature.run(img)
                 X.append(feature)
                 Y.append([id,is_reversed])
-
+        time2 = time.clock()
+        print(time2-time1)
+    #
     X = np.array(X)
     Y = np.array(Y)
     shuffle = [i for i in range(len(X))]
@@ -186,10 +170,10 @@ def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,
     train_Y = Y[shuffle[test_num:]]
     print(test_num,len(X)-test_num)
     print(test_X.shape,train_X.shape)
-    np.save(os.path.join(data_dir,'test_X'),test_X)
-    np.save(os.path.join(data_dir,'train_X'),train_X)
-    np.save(os.path.join(data_dir,'test_Y'),test_Y)
-    np.save(os.path.join(data_dir,'train_Y'),train_Y)
+    np.save(os.path.join(data_dir,'test_X1'),test_X)
+    np.save(os.path.join(data_dir,'train_X1'),train_X)
+    np.save(os.path.join(data_dir,'test_Y1'),test_Y)
+    np.save(os.path.join(data_dir,'train_Y1'),train_Y)
 
 if __name__ =="__main__":
     width = 100
