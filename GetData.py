@@ -1,8 +1,7 @@
 
 #%%
-import  xihua
+from Until import *
 import time
-import  Word2Feature
 import random
 import tensorflow
 import matplotlib.pyplot as plt
@@ -14,7 +13,6 @@ from PIL import Image,ImageFont,ImageDraw
 import xlwt
 import  cv2
 import  shutil
-from ImageUtil import  *
 
 #得到初始数据集
 class Font2Img(object):
@@ -95,18 +93,7 @@ def get_data1(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,rev
                         aug_img = ImageProcessing.opening(img,3)
                         flag =4
                     image_list.append((aug_img,is_reversed))
-                # fig,ax = plt.subplots(1,2)
-                # ax[0].imshow(img,cmap="gray")
-                # ax[1].imshow(aug_img,cmap="gray")
-                # ax[1].imshow(xihua.XiHua.Xihua(img),cmap="gray")
-                # ax[3].imshow(xihua.Xihua(aug_img,xihua.array),cmap="gray")
-                #
-                # ax[0].set_xticks([])
-                # ax[0].set_yticks([])
-                # ax[1].set_xticks([])
-                # ax[1].set_yticks([])
-                # plt.title(font_name)
-                # plt.show()
+
         test_num = len(image_list) * test_ratio
         np.random.shuffle(image_list)
         count = 0
@@ -131,12 +118,10 @@ def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,
         id2word = pickle.load(f)
     with open(r"Data/word2id.pkl","rb") as f:
         word2id = pickle.load(f)
-
     num = len(word2id)
-    # print(num)
     X = []
     Y = []
-    word2feature = Word2Feature.Word2Feature()
+    word2feature = Word2Feature()
     time1 = time.clock()
     for word, id in  list(word2id.items())[:]:
         print(word, id)
@@ -146,13 +131,7 @@ def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,
             font_path = os.path.join(r"./KNNFonts",font_name)
             for rotate in range(-Rotate, Rotate+1, Rotate_step):
                 is_reversed = random.random()<reversed_ratio
-                # fig, ax = plt.subplots(1,2)
                 img = font2img.get_image(font_path, word, rotate,crop,is_reversed)
-                # ax[0].imshow(img,cmap='gray')
-                if abs(rotate) >5:
-                    img = Word2Feature.rotating_calipers(img)
-                # ax[1].imshow(img,cmap='gray')
-                # plt.show()
                 feature = word2feature.run(img)
                 X.append(feature)
                 Y.append([id,is_reversed])
@@ -170,10 +149,54 @@ def get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,
     train_Y = Y[shuffle[test_num:]]
     print(test_num,len(X)-test_num)
     print(test_X.shape,train_X.shape)
-    np.save(os.path.join(data_dir,'test_X1'),test_X)
-    np.save(os.path.join(data_dir,'train_X1'),train_X)
-    np.save(os.path.join(data_dir,'test_Y1'),test_Y)
-    np.save(os.path.join(data_dir,'train_Y1'),train_Y)
+    np.save(os.path.join(data_dir,'test_X'),test_X)
+    np.save(os.path.join(data_dir,'train_X'),train_X)
+    np.save(os.path.join(data_dir,'test_Y'),test_Y)
+    np.save(os.path.join(data_dir,'train_Y'),train_Y)
+
+def get_data_cnn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio):
+    id2word = {}
+    word2id = {}
+    with open(r"Data/id2word.pkl","rb") as f:
+        id2word = pickle.load(f)
+    with open(r"Data/word2id.pkl","rb") as f:
+        word2id = pickle.load(f)
+
+    num = len(word2id)
+    X = []
+    Y = []
+    for word, id in  list(word2id.items())[:]:
+        print(word, id)
+        image_list = []
+        font2img = Font2Img(width, height)
+        for font_name in os.listdir(r"./CNNFonts")[:]:
+            font_path = os.path.join(r"./CNNFonts",font_name)
+            for rotate in range(-Rotate, Rotate+1, Rotate_step):
+                is_reversed = random.random()<reversed_ratio
+                img = font2img.get_image(font_path, word, rotate,crop,is_reversed)
+                # if abs(rotate) >5:
+                #     img = Word2Feature.rotating_calipers(img)
+                X.append(img)
+                Y.append([id,is_reversed])
+    #
+    X = np.array(X)
+    Y = np.array(Y)
+    shuffle = [i for i in range(len(X))]
+    random.shuffle(shuffle)
+    test_num = int(len(X)*test_ratio)
+    test_X = X[shuffle[:test_num]]
+    train_X = X[shuffle[test_num:]]#.astype('uint8')
+    test_Y = Y[shuffle[:test_num]]
+    train_Y = Y[shuffle[test_num:]]
+
+    print(test_num,len(X)-test_num)
+    print(test_X.shape,train_X.shape)
+    # np.save(os.path.join(data_dir,'test_X'),test_X)
+    # np.save(os.path.join(data_dir,'train_X'),train_X)
+    # np.save(os.path.join(data_dir,'test_Y'),test_Y)
+    # np.save(os.path.join(data_dir,'train_Y'),train_Y)
+    print(test_X.shape, test_X.dtype)
+    print(test_X)
 
 if __name__ =="__main__":
     width = 100
@@ -183,6 +206,15 @@ if __name__ =="__main__":
     test_ratio = 0.02
     crop = 15# 字左右随机裁剪0-15个像素
     reversed_ratio = 0.4
-    data_dir = r'kNNData'
+    data_dir = r'kNNData1'
     get_data_knn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio)
+    # width = 40
+    # height = 40
+    # Rotate = 20
+    # Rotate_step = 5
+    # test_ratio = 0.02
+    # crop = 15# 字左右随机裁剪0-15个像素
+    # reversed_ratio = 0.5
+    # data_dir = r'CNNData'
+    # get_data_cnn(data_dir, width, height, Rotate, Rotate_step, test_ratio, crop,reversed_ratio)
 
