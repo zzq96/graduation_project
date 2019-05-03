@@ -460,8 +460,6 @@ class Word2Feature(object):
             ax[3].set_yticks([])
             ax[4].set_xticks([])
             ax[4].set_yticks([])
-            plt.xticks([])
-            plt.yticks([])
             plt.axis("off")
             plt.show()
 
@@ -499,8 +497,6 @@ class Word2Feature(object):
             ax[3].set_yticks([])
             ax[4].set_xticks([])
             ax[4].set_yticks([])
-            plt.xticks([])
-            plt.yticks([])
             plt.axis("off")
             plt.show()
 
